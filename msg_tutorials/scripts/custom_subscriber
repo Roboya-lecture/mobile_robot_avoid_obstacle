@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+import Submsg.Msg_Subscriber
+
+if __name__ == '__main__':
+	Submsg.Msg_Subscriber.listener()
+	# listener()

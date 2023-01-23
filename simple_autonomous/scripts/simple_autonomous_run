@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+import rospy
+from geometry_msgs.msg import Twist
+from sensor_msgs.msg import LaserScan
+
+#### CODE EDIT ####
+front_scan = []
+right_scan = []
+back_scan = []
+left_scan = []
+#### CODE EDIT ####
+
+#### CODE EDIT ####
+def scan_callback(data):
+    global front_scan, right_scan, back_scan, left_scan
+    front_scan = list(data.ranges[315:360] + data.ranges[0:45])
+    left_scan = list(data.ranges[45:135])
+    back_scan = list(data.ranges[135:225])
+    right_scan = list(data.ranges[225:315])
+
+#### CODE EDIT ####
+
+if __name__=="__main__":
+
+    rospy.init_node('simple_autonomous')
+    pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+
+    #### CODE EDIT ####
+    rospy.Subscriber('scan',LaserScan,scan_callback)
+    #### CODE EDIT ####
+
+    turtlebot3_model = rospy.get_param("model", "burger")
+
+    try:
+        while not rospy.is_shutdown():
+            #### CODE EDIT ####
+            control_linear_vel = 0.1
+            control_angular_vel = 0
+
+            front_len = len(front_scan)
+            right_len = len(right_scan)
+            back_len = len(back_scan)
+            left_len = len(left_scan)
+
+            #### CODE EDIT ####
+            distance = 0.25
+            front_stop = False
+            right_stop = False
+            back_stop = False
+            left_stop = False
+            for i in range(front_len):
+                if front_scan[i] <= distance:
+                    front_stop = True
+                    break
+            
+            for i in range(right_len):
+                if right_scan[i] <= distance:
+                    right_stop = True
+                    break
+
+            for i in range(back_len):
+                if back_scan[i] <= distance:
+                    back_stop = True
+                    break
+
+            for i in range(left_len):
+                if left_scan[i] <= distance:
+                    left_stop = True
+                    break
+
+            if(front_stop==True or right_stop==True or back_stop==True or left_stop==True):
+                if front_stop==True:
+                    control_linear_vel = -0.15
+                    control_angular_vel = 0.4
+                if right_stop==True:
+                    control_angular_vel = 0.4
+                if back_stop==True:
+                    control_linear_vel = 0.15
+                    control_angular_vel = 0.4
+                if left_stop==True:
+                    control_angular_vel = -0.4
+
+            #### CODE EDIT ####
+
+            twist = Twist()
+
+            twist.linear.x = control_linear_vel; twist.linear.y = 0.0; twist.linear.z = 0.0
+
+            twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = control_angular_vel
+
+            pub.publish(twist)
+
+    except:
+        print("Error")
+
+    finally:
+        twist = Twist()
+        twist.linear.x = 0.0; twist.linear.y = 0.0; twist.linear.z = 0.0
+        twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = 0.0
+        pub.publish(twist)

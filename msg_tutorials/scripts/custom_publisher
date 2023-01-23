@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+import rospy
+import Pubmsg.Msg_Publisher
+
+if __name__ == '__main__':
+	try:
+		Pubmsg.Msg_Publisher.talker()
+	except rospy.ROSInterruptException: pass
